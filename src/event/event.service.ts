@@ -82,10 +82,6 @@ export class EventService {
 
   // Create -----------------------------------------------------
   create(createEventInput: CreateEventInput): boolean {
-    console.log({
-      createEventInput,
-    });
-
     const event: Event = {
       id: this.generateRandomId(),
       ...createEventInput,
@@ -108,7 +104,6 @@ export class EventService {
 
   // FindOAll --------------------------------------------------
   findAll(args: EventArgs): Event[] {
-    console.log({ args });
     const { date, name, title } = args;
 
     const matchs: Event[] = [];
