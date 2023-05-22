@@ -25,6 +25,12 @@ type Event {
   date: DateObject!
   tags: [String!]!
   location: LocationObject!
+  type: EventType!
+}
+
+enum EventType {
+  WOKRSHOP
+  TERTULIA
 }
 
 type AggregationType {
@@ -80,6 +86,7 @@ input CreateEventInput {
   date: DateInput!
   tags: [String!]!
   location: LocationInput!
+  type: EventType!
 }
 
 input SpeakerInput {
@@ -104,4 +111,5 @@ input UpdateEventInput {
   date: DateInput
   tags: [String!]
   location: LocationInput
+  type: EventType
 }

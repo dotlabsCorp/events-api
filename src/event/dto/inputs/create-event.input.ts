@@ -1,16 +1,16 @@
 import { Field, InputType } from '@nestjs/graphql';
 import {
   IsArray,
-  IsDate,
   IsDateString,
   IsNotEmpty,
-  IsNotEmptyObject,
   IsOptional,
   IsString,
   IsUrl,
   ValidateNested,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { EventType } from 'src/event/entity/event.entity';
 
 @InputType()
 class Link {
@@ -75,4 +75,9 @@ export class CreateEventInput {
   @Type(() => LocationInput)
   @ValidateNested()
   location: LocationInput;
+
+  @Field(() => EventType!)
+  @IsString()
+  @IsIn(Object.values(EventType))
+  type: EventType;
 }

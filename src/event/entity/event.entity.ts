@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 @ObjectType()
 class LinkObject {
@@ -26,6 +26,14 @@ export class LocationObject extends LinkObject {
   name: string;
 }
 
+export enum EventType {
+  WOKRSHOP = 'Workshop',
+  TERTULIA = 'Tertulia',
+}
+registerEnumType(EventType, {
+  name: 'EventType',
+});
+
 @ObjectType()
 export class Event {
   @Field(() => String!)
@@ -42,4 +50,6 @@ export class Event {
   tags: string[];
   @Field(() => LocationObject!)
   location: LocationObject;
+  @Field(() => EventType!)
+  type: EventType;
 }

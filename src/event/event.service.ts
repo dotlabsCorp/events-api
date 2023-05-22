@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Event } from './entity/event.entity';
+import { Event, EventType } from './entity/event.entity';
 import { CreateEventInput, UpdateEventInput, EventArgs } from './dto';
 
 @Injectable()
@@ -24,6 +24,7 @@ export class EventService {
         name: 'Location 1',
         url: 'https://location1.com',
       },
+      type: EventType.WOKRSHOP,
     },
     {
       id: '2',
@@ -44,6 +45,7 @@ export class EventService {
         name: 'Location 2',
         url: 'https://location2.com',
       },
+      type: EventType.WOKRSHOP,
     },
     {
       id: '3',
@@ -61,6 +63,7 @@ export class EventService {
       location: {
         name: 'Location 3',
       },
+      type: EventType.TERTULIA,
     },
   ];
 
