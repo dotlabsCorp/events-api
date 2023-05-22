@@ -18,7 +18,7 @@ type LocationObject {
 }
 
 type Event {
-  id: String!
+  id: ID!
   title: String!
   speakers: [SpeakerObject!]!
   description: String!

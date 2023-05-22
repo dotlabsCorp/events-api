@@ -1,4 +1,5 @@
-import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @ObjectType()
 class LinkObject {
@@ -35,21 +36,37 @@ registerEnumType(EventType, {
 });
 
 @ObjectType()
+@Entity({ name: 'events' })
 export class Event {
-  @Field(() => String!)
+  @Field(() => ID!)
+  @PrimaryGeneratedColumn('uuid')
   id: string;
+
   @Field(() => String!)
+  @Column('varchar')
   title: string;
+
   @Field(() => [SpeakerObject!]!)
+  @Column('jsonb')
   speakers: SpeakerObject[];
+
   @Field(() => String!)
+  @Column('varchar')
   description: string;
+
   @Field(() => DateObject!)
+  @Column('jsonb')
   date: DateObject;
+
   @Field(() => [String!]!)
+  @Column('varchar', { array: true })
   tags: string[];
+
   @Field(() => LocationObject!)
+  @Column('jsonb')
   location: LocationObject;
+
   @Field(() => EventType!)
+  @Column('enum', { enum: EventType })
   type: EventType;
 }
