@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Event } from './entity/event.entity';
-import { CreateEventInput, UpdateEventInput } from './dto/inputs';
+import { CreateEventInput, UpdateEventInput, EventArgs } from './dto';
 
 @Injectable()
 export class EventService {
@@ -50,10 +50,10 @@ export class EventService {
       title: 'Event 3',
       speakers: [
         {
-          name: 'Speaker 3',
+          name: 'Juan',
         },
       ],
-      description: 'Description 3',
+      description: 'Description',
       date: {
         datetime: '2021-03-03T00:00:00.000Z',
       },
@@ -63,6 +63,7 @@ export class EventService {
       },
     },
   ];
+  // Create -----------------------------------------------------
   create(createEventInput: CreateEventInput): boolean {
     console.log({
       createEventInput,
@@ -77,18 +78,59 @@ export class EventService {
 
     return true;
   }
+  // -----------------------------------------------------------
 
+  // FindOne ---------------------------------------------------
   findOne(id: string): Event {
     const event = this.events.find((event) => event.id === id);
     if (!event) throw new NotFoundException(`Event ${id} not found`);
 
     return event;
   }
+  // -----------------------------------------------------------
 
-  findAll(): Event[] {
-    return this.events;
+  // FindOAll --------------------------------------------------
+  findAll(args: EventArgs): Event[] {
+    console.log({ args });
+    const { date, name, title } = args;
+
+    const matchs: Event[] = [];
+
+    if (date) {
+      this.events.map((event) => {
+        if (new Date(event.date.datetime) >= date) {
+          if (!this.existInById(matchs, event)) matchs.push(event);
+        }
+      });
+    }
+
+    if (title) {
+      this.events.map((event) => {
+        if (event.title.includes(title)) {
+          if (!this.existInById(matchs, event)) matchs.push(event);
+        }
+      });
+    }
+
+    if (name) {
+      this.events.map((event) => {
+        event.speakers.map((speaker) => {
+          if (speaker.name.includes(name)) {
+            if (!this.existInById(matchs, event)) matchs.push(event);
+          }
+        });
+      });
+    }
+
+    if (matchs.length > 0) {
+      return matchs;
+    } else {
+      return this.events;
+    }
   }
+  // -----------------------------------------------------------
 
+  // Update ----------------------------------------------------
   update(id: string, updateEventInput: UpdateEventInput) {
     const event = this.findOne(id);
 
@@ -107,13 +149,16 @@ export class EventService {
 
     return true;
   }
+  // -----------------------------------------------------------
 
+  // Delete ----------------------------------------------------
   delete(id: string) {
     this.findOne(id);
     this.events = this.events.filter((event) => event.id !== id);
 
     return true;
   }
+  // -----------------------------------------------------------
 
   generateRandomId(): string {
     const letters = 'abcdefghijklmnopqrstuvwxyz';
@@ -126,5 +171,9 @@ export class EventService {
     }
 
     return id;
+  }
+
+  existInById(array: Event[], value: Event): boolean {
+    return array.some((element) => element.id === value.id);
   }
 }

@@ -32,7 +32,18 @@ type Query {
   findOneEvent(id: String!): Event!
 
   """Get all events"""
-  findAllEvents: [Event!]!
+  findAllEvents(
+    """The name of the speaker of the events to find."""
+    name: String
+
+    """The title of the events to find."""
+    title: String
+
+    """
+    The date of the events to find. Returns all events after or equal to date.
+    """
+    date: String
+  ): [Event!]!
 }
 
 type Mutation {
