@@ -16,7 +16,7 @@ export class EventService {
       ],
       description: 'Description 1',
       date: {
-        datetime: '2021-01-01T00:00:00.000Z',
+        datetime: '2023-05-20T05:00:00.000Z',
         url: 'https://date1.com',
       },
       tags: ['tag1'],
@@ -36,7 +36,7 @@ export class EventService {
       ],
       description: 'Description 2',
       date: {
-        datetime: '2021-02-02T00:00:00.000Z',
+        datetime: '2023-05-22T05:00:00.000Z',
         url: 'https://date2.com',
       },
       tags: ['tag2'],
@@ -55,7 +55,7 @@ export class EventService {
       ],
       description: 'Description',
       date: {
-        datetime: '2021-03-03T00:00:00.000Z',
+        datetime: '2023-05-26T05:00:00.000Z',
       },
       tags: ['tag3'],
       location: {
@@ -63,6 +63,20 @@ export class EventService {
       },
     },
   ];
+
+  get eventsLength(): number {
+    return this.events.length;
+  }
+
+  get incomingEvents(): Event[] {
+    const today = new Date();
+    const incomingEvents: Event[] = this.events.filter(
+      (event) => new Date(event.date.datetime) >= today,
+    );
+
+    return incomingEvents;
+  }
+
   // Create -----------------------------------------------------
   create(createEventInput: CreateEventInput): boolean {
     console.log({
@@ -160,7 +174,17 @@ export class EventService {
   }
   // -----------------------------------------------------------
 
-  generateRandomId(): string {
+  // get length ------------------------------------------------
+  count(): number {
+    return this.eventsLength;
+  }
+
+  countIncoming(): number {
+    return this.incomingEvents.length;
+  }
+  // -----------------------------------------------------------
+
+  private generateRandomId(): string {
     const letters = 'abcdefghijklmnopqrstuvwxyz';
     const numbers = '0123456789';
     const characters = `${letters}${letters.toUpperCase()}${numbers}`;
@@ -173,7 +197,7 @@ export class EventService {
     return id;
   }
 
-  existInById(array: Event[], value: Event): boolean {
+  private existInById(array: Event[], value: Event): boolean {
     return array.some((element) => element.id === value.id);
   }
 }

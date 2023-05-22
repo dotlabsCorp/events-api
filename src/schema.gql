@@ -27,6 +27,11 @@ type Event {
   location: LocationObject!
 }
 
+type AggregationType {
+  total: Int!
+  incoming: Int!
+}
+
 type Query {
   """Get one event"""
   findOneEvent(id: String!): Event!
@@ -44,6 +49,11 @@ type Query {
     """
     date: String
   ): [Event!]!
+
+  """Get the count of all events and incoming events"""
+  count: AggregationType!
+  countAll: Int!
+  incomingEvents: Int!
 }
 
 type Mutation {

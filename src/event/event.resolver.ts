@@ -1,8 +1,9 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 
+import { CreateEventInput, UpdateEventInput, EventArgs } from './dto';
 import { Event } from './entity/event.entity';
 import { EventService } from './event.service';
-import { CreateEventInput, UpdateEventInput, EventArgs } from './dto';
+import { AggregationType } from './types';
 
 @Resolver()
 export class EventResolver {
@@ -69,6 +70,30 @@ export class EventResolver {
   })
   delete(@Args('id', { type: () => String! }) id: string) {
     return this.eventService.delete(id);
+  }
+  // -----------------------------------------------------------
+
+  // Agreagations ----------------------------------------------
+
+  @Query(() => AggregationType!, {
+    name: 'count',
+    description: 'Get the count of all events and incoming events',
+  })
+  count(): AggregationType {
+    return {
+      total: this.eventService.count(),
+      incoming: this.eventService.countIncoming(),
+    };
+  }
+
+  @Query(() => Int!, { name: 'countAll' })
+  countAll() {
+    return this.eventService.count();
+  }
+
+  @Query(() => Int!, { name: 'incomingEvents' })
+  countIncoming() {
+    return this.eventService.countIncoming();
   }
   // -----------------------------------------------------------
 }
