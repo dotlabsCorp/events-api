@@ -1,0 +1,86 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type SpeakerObject {
+  url: String
+  name: String!
+}
+
+type DateObject {
+  url: String
+  datetime: String!
+}
+
+type LocationObject {
+  url: String
+  name: String!
+}
+
+type Event {
+  id: String!
+  title: String!
+  speakers: [SpeakerObject!]!
+  description: String!
+  date: DateObject!
+  tags: [String!]!
+  location: LocationObject!
+}
+
+type Query {
+  """Get one event"""
+  findOneEvent(id: String!): Event!
+
+  """Get all events"""
+  findAllEvents: [Event!]!
+}
+
+type Mutation {
+  """
+  Create one event. Returns true if successful. Otherwise, returns false.
+  """
+  createEvent(createEvent: CreateEventInput!): Boolean!
+
+  """
+  Update one event. Returns true if successful. Otherwise, returns false.
+  """
+  updateEvent(id: String!, updateEvent: UpdateEventInput!): Boolean!
+
+  """
+  Delete one event. Returns true if successful. Otherwise, returns false.
+  """
+  deleteEvent(id: String!): Boolean!
+}
+
+input CreateEventInput {
+  title: String!
+  speakers: [SpeakerInput!]!
+  description: String!
+  date: DateInput!
+  tags: [String!]!
+  location: LocationInput!
+}
+
+input SpeakerInput {
+  url: String
+  name: String!
+}
+
+input DateInput {
+  url: String
+  datetime: String!
+}
+
+input LocationInput {
+  url: String
+  name: String!
+}
+
+input UpdateEventInput {
+  title: String
+  speakers: [SpeakerInput!]
+  description: String
+  date: DateInput
+  tags: [String!]
+  location: LocationInput
+}
