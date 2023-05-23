@@ -4,6 +4,7 @@ import { CreateEventInput, UpdateEventInput, EventArgs } from './dto';
 import { Event } from './entity/event.entity';
 import { EventService } from './event.service';
 import { AggregationType } from './types';
+import { ParseUUIDPipe } from '@nestjs/common';
 
 @Resolver()
 export class EventResolver {
@@ -15,7 +16,9 @@ export class EventResolver {
     description:
       'Create one event. Returns true if successful. Otherwise, returns false.',
   })
-  create(@Args('createEvent') createEventInput: CreateEventInput) {
+  create(
+    @Args('createEvent') createEventInput: CreateEventInput,
+  ): Promise<boolean> {
     return this.eventService.create(createEventInput);
   }
   // -----------------------------------------------------------
@@ -26,7 +29,7 @@ export class EventResolver {
     description: 'Get one event',
   })
   findOne(
-    @Args('id', { type: () => String! })
+    @Args('id', { type: () => String! }, ParseUUIDPipe)
     id: string,
   ) {
     return this.eventService.findOne(id);
@@ -41,7 +44,7 @@ export class EventResolver {
   findAll(
     @Args()
     args: EventArgs,
-  ): Event[] {
+  ): Promise<Event[]> {
     return this.eventService.findAll(args);
   }
   // -----------------------------------------------------------
@@ -53,7 +56,7 @@ export class EventResolver {
       'Update one event. Returns true if successful. Otherwise, returns false.',
   })
   update(
-    @Args('id', { type: () => String! })
+    @Args('id', { type: () => String! }, ParseUUIDPipe)
     id: string,
     @Args('updateEvent')
     createEventInput: UpdateEventInput,
@@ -68,7 +71,10 @@ export class EventResolver {
     description:
       'Delete one event. Returns true if successful. Otherwise, returns false.',
   })
-  delete(@Args('id', { type: () => String! }) id: string) {
+  delete(
+    @Args('id', { type: () => String! }, ParseUUIDPipe)
+    id: string,
+  ): Promise<boolean> {
     return this.eventService.delete(id);
   }
   // -----------------------------------------------------------
@@ -79,10 +85,10 @@ export class EventResolver {
     name: 'count',
     description: 'Get the count of all events and incoming events',
   })
-  count(): AggregationType {
+  async count(): Promise<AggregationType> {
     return {
-      total: this.eventService.count(),
-      incoming: this.eventService.countIncoming(),
+      total: await this.eventService.count(),
+      incoming: await this.eventService.countIncoming(),
     };
   }
 

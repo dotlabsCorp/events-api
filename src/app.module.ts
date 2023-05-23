@@ -22,9 +22,10 @@ import { EventService } from './event/event.service';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      synchronize: true,
+      synchronize: process.env.NODE_ENV === 'development',
       autoLoadEntities: true,
     }),
+    TypeOrmModule.forFeature([Event]),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       playground: false,
@@ -33,7 +34,6 @@ import { EventService } from './event/event.service';
     }),
     EventModule,
   ],
-  controllers: [],
   providers: [EventResolver, EventService],
 })
 export class AppModule {}

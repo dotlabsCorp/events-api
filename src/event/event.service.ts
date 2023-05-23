@@ -1,201 +1,188 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Event, EventType } from './entity/event.entity';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { Repository, MoreThanOrEqual, EqualOperator } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { Event } from './entity/event.entity';
 import { CreateEventInput, UpdateEventInput, EventArgs } from './dto';
 
 @Injectable()
 export class EventService {
-  private events: Event[] = [
-    {
-      id: '1',
-      title: 'Event 1',
-      speakers: [
-        {
-          name: 'Speaker 1',
-          url: 'https://speaker1.com',
-        },
-      ],
-      description: 'Description 1',
-      date: {
-        datetime: '2023-05-20T05:00:00.000Z',
-        url: 'https://date1.com',
-      },
-      tags: ['tag1'],
-      location: {
-        name: 'Location 1',
-        url: 'https://location1.com',
-      },
-      type: EventType.WOKRSHOP,
-    },
-    {
-      id: '2',
-      title: 'Event 2',
-      speakers: [
-        {
-          name: 'Speaker 2',
-          url: 'https://speaker2.com',
-        },
-      ],
-      description: 'Description 2',
-      date: {
-        datetime: '2023-05-22T05:00:00.000Z',
-        url: 'https://date2.com',
-      },
-      tags: ['tag2'],
-      location: {
-        name: 'Location 2',
-        url: 'https://location2.com',
-      },
-      type: EventType.WOKRSHOP,
-    },
-    {
-      id: '3',
-      title: 'Event 3',
-      speakers: [
-        {
-          name: 'Juan',
-        },
-      ],
-      description: 'Description',
-      date: {
-        datetime: '2023-05-26T05:00:00.000Z',
-      },
-      tags: ['tag3'],
-      location: {
-        name: 'Location 3',
-      },
-      type: EventType.TERTULIA,
-    },
-  ];
+  constructor(
+    @InjectRepository(Event)
+    private readonly eventsRepository: Repository<Event>,
+  ) {}
 
-  get eventsLength(): number {
-    return this.events.length;
+  get eventsLength(): Promise<number> {
+    return this.eventsRepository.count();
   }
 
-  get incomingEvents(): Event[] {
+  get incomingEvents(): Promise<Event[]> {
     const today = new Date();
-    const incomingEvents: Event[] = this.events.filter(
-      (event) => new Date(event.date.datetime) >= today,
-    );
+
+    const incomingEvents = this.eventsRepository.find({
+      where: {
+        date: MoreThanOrEqual(today),
+      },
+    });
 
     return incomingEvents;
   }
 
   // Create -----------------------------------------------------
-  create(createEventInput: CreateEventInput): boolean {
-    const event: Event = {
-      id: this.generateRandomId(),
-      ...createEventInput,
-    };
+  async create(createEventInput: CreateEventInput): Promise<boolean> {
+    const newEvent = this.eventsRepository.create(createEventInput);
+    const saveOp = await this.saveEvent(newEvent);
 
-    this.events.push(event);
+    if (saveOp instanceof Error) {
+      throw new InternalServerErrorException(saveOp);
+    } else {
+      return saveOp;
+    }
+  }
+
+  private async saveEvent(event: Event): Promise<boolean | Error> {
+    try {
+      await this.eventsRepository.save(event);
+    } catch (error) {
+      return new Error(error);
+    }
 
     return true;
   }
   // -----------------------------------------------------------
 
   // FindOne ---------------------------------------------------
-  findOne(id: string): Event {
-    const event = this.events.find((event) => event.id === id);
-    if (!event) throw new NotFoundException(`Event ${id} not found`);
+  async findOne(id: string): Promise<Event> {
+    const event = await this.eventsRepository.findOne({ where: { id } });
 
-    return event;
+    if (!event) {
+      throw new NotFoundException(`Event with id ${id} not found`);
+    } else {
+      return event;
+    }
   }
   // -----------------------------------------------------------
 
   // FindOAll --------------------------------------------------
-  findAll(args: EventArgs): Event[] {
+  // @todo use query builder to make this more efficient
+  async findAll(args: EventArgs): Promise<Event[]> {
     const { date, name, title } = args;
-
-    const matchs: Event[] = [];
+    let events: Event[] = [];
 
     if (date) {
-      this.events.map((event) => {
-        if (new Date(event.date.datetime) >= date) {
-          if (!this.existInById(matchs, event)) matchs.push(event);
-        }
+      const foundEvents = await this.eventsRepository.find({
+        where: { date: MoreThanOrEqual(date) },
       });
+
+      if (foundEvents) {
+        events = foundEvents;
+      }
+    } else if (name) {
+      const foundEvents = await this.eventsRepository.find({
+        where: {
+          speakers: {
+            name,
+          },
+        },
+      });
+
+      if (foundEvents) {
+        events = foundEvents;
+      }
+    } else if (title) {
+      const foundEvents = await this.eventsRepository.find({
+        where: { title },
+      });
+
+      if (foundEvents) {
+        events = foundEvents;
+      }
     }
 
-    if (title) {
-      this.events.map((event) => {
-        if (event.title.includes(title)) {
-          if (!this.existInById(matchs, event)) matchs.push(event);
-        }
-      });
-    }
-
-    if (name) {
-      this.events.map((event) => {
-        event.speakers.map((speaker) => {
-          if (speaker.name.includes(name)) {
-            if (!this.existInById(matchs, event)) matchs.push(event);
-          }
-        });
-      });
-    }
-
-    if (matchs.length > 0) {
-      return matchs;
+    if (events.length === 0) {
+      return await this.eventsRepository.find();
     } else {
-      return this.events;
+      return events;
     }
   }
   // -----------------------------------------------------------
 
   // Update ----------------------------------------------------
-  update(id: string, updateEventInput: UpdateEventInput) {
-    const event = this.findOne(id);
+  async update(
+    id: string,
+    updateEventInput: UpdateEventInput,
+  ): Promise<boolean> {
+    const event = await this.findOne(id);
 
-    const updatedEvent = {
-      ...event,
-      ...updateEventInput,
-    };
+    if (!event) {
+      throw new NotFoundException();
+    } else {
+      const updateOp = await this.updateEvent(id, updateEventInput);
 
-    this.events = this.events.map((event) => {
-      if (event.id === id) {
-        return updatedEvent;
+      if (updateOp instanceof Error) {
+        throw new InternalServerErrorException(updateOp);
       } else {
-        return event;
+        return updateOp;
       }
-    });
+    }
+  }
+
+  private async updateEvent(
+    id: string,
+    updateEventInput: UpdateEventInput,
+  ): Promise<boolean | Error> {
+    try {
+      await this.eventsRepository.update(id, updateEventInput);
+    } catch (error) {
+      return new Error(error);
+    }
 
     return true;
   }
   // -----------------------------------------------------------
 
   // Delete ----------------------------------------------------
-  delete(id: string) {
-    this.findOne(id);
-    this.events = this.events.filter((event) => event.id !== id);
+  async delete(id: string): Promise<boolean> {
+    const event = await this.findOne(id);
+
+    if (!event) {
+      throw new NotFoundException();
+    } else {
+      const deleteOp = await this.deleteEvent(id);
+
+      if (deleteOp instanceof Error) {
+        throw new InternalServerErrorException(deleteOp);
+      } else {
+        return deleteOp;
+      }
+    }
+  }
+
+  private async deleteEvent(id: string): Promise<boolean | Error> {
+    try {
+      await this.eventsRepository.delete(id);
+    } catch (error) {
+      return new Error(error);
+    }
 
     return true;
   }
   // -----------------------------------------------------------
 
   // get length ------------------------------------------------
-  count(): number {
-    return this.eventsLength;
+  async count(): Promise<number> {
+    return await this.eventsLength;
   }
 
-  countIncoming(): number {
-    return this.incomingEvents.length;
+  async countIncoming(): Promise<number> {
+    return (await this.incomingEvents).length;
   }
   // -----------------------------------------------------------
-
-  private generateRandomId(): string {
-    const letters = 'abcdefghijklmnopqrstuvwxyz';
-    const numbers = '0123456789';
-    const characters = `${letters}${letters.toUpperCase()}${numbers}`;
-
-    let id = '';
-    for (let i = 0; i < 10; i++) {
-      id += characters[Math.floor(Math.random() * characters.length)];
-    }
-
-    return id;
-  }
-
-  private existInById(array: Event[], value: Event): boolean {
-    return array.some((element) => element.id === value.id);
+  private isExistById(array: Event[], event: Event, id: string): boolean {
+    return array.some((event) => event.id === id);
   }
 }
