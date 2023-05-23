@@ -3,7 +3,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Repository, MoreThanOrEqual, EqualOperator } from 'typeorm';
+import { Repository, MoreThanOrEqual } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Event } from './entity/event.entity';

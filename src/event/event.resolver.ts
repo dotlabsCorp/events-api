@@ -1,4 +1,4 @@
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, ID, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 
 import { CreateEventInput, UpdateEventInput, EventArgs } from './dto';
 import { Event } from './entity/event.entity';
@@ -29,7 +29,7 @@ export class EventResolver {
     description: 'Get one event',
   })
   findOne(
-    @Args('id', { type: () => String! }, ParseUUIDPipe)
+    @Args('id', { type: () => ID! }, ParseUUIDPipe)
     id: string,
   ) {
     return this.eventService.findOne(id);
@@ -56,9 +56,9 @@ export class EventResolver {
       'Update one event. Returns true if successful. Otherwise, returns false.',
   })
   update(
-    @Args('id', { type: () => String! }, ParseUUIDPipe)
+    @Args('id', { type: () => ID! }, ParseUUIDPipe)
     id: string,
-    @Args('updateEvent')
+    @Args('updateEvent', { type: () => UpdateEventInput! })
     createEventInput: UpdateEventInput,
   ) {
     return this.eventService.update(id, createEventInput);
@@ -72,7 +72,7 @@ export class EventResolver {
       'Delete one event. Returns true if successful. Otherwise, returns false.',
   })
   delete(
-    @Args('id', { type: () => String! }, ParseUUIDPipe)
+    @Args('id', { type: () => ID! }, ParseUUIDPipe)
     id: string,
   ): Promise<boolean> {
     return this.eventService.delete(id);

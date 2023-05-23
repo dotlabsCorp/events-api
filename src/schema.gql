@@ -40,7 +40,7 @@ type AggregationType {
 
 type Query {
   """Get one event"""
-  findOneEvent(id: String!): Event!
+  findOneEvent(id: ID!): Event!
 
   """Get all events"""
   findAllEvents(
@@ -71,12 +71,12 @@ type Mutation {
   """
   Update one event. Returns true if successful. Otherwise, returns false.
   """
-  updateEvent(id: String!, updateEvent: UpdateEventInput!): Boolean!
+  updateEvent(id: ID!, updateEvent: UpdateEventInput!): Boolean!
 
   """
   Delete one event. Returns true if successful. Otherwise, returns false.
   """
-  deleteEvent(id: String!): Boolean!
+  deleteEvent(id: ID!): Boolean!
 }
 
 input CreateEventInput {
