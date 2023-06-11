@@ -32,7 +32,7 @@ export class EventResolver {
     description: 'Get one event',
   })
   findOne(
-    @Args('id', { type: () => ID! }, ParseUUIDPipe)
+    @Args('id', { type: () => ID, nullable: false }, ParseUUIDPipe)
     id: string,
   ) {
     return this.eventService.findOne(id);

@@ -8,7 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Event } from './entity/event.entity';
 import { CreateEventInput, UpdateEventInput, EventArgs } from './dto';
-import { User } from 'src/users/entities';
 
 @Injectable()
 export class EventService {
