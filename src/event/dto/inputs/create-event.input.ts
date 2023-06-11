@@ -80,4 +80,9 @@ export class CreateEventInput {
   @IsString()
   @IsIn(Object.values(EventType))
   type: EventType;
+
+  @Field(() => String)
+  @IsUrl()
+  @IsOptional()
+  imageUrl?: string;
 }

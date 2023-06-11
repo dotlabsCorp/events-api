@@ -4,21 +4,24 @@ import { CreateEventInput, UpdateEventInput, EventArgs } from './dto';
 import { Event } from './entity/event.entity';
 import { EventService } from './event.service';
 import { AggregationType } from './types';
-import { ParseUUIDPipe } from '@nestjs/common';
+import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards';
 
 @Resolver()
+@UseGuards(JwtAuthGuard)
 export class EventResolver {
   constructor(private readonly eventService: EventService) {}
 
   // Create -----------------------------------------------------
-  @Mutation(() => Boolean!, {
+  @Mutation(() => Event, {
+    nullable: false,
     name: 'createEvent',
     description:
       'Create one event. Returns true if successful. Otherwise, returns false.',
   })
   create(
     @Args('createEvent') createEventInput: CreateEventInput,
-  ): Promise<boolean> {
+  ): Promise<Event> {
     return this.eventService.create(createEventInput);
   }
   // -----------------------------------------------------------
@@ -36,7 +39,7 @@ export class EventResolver {
   }
   // -----------------------------------------------------------
 
-  // FindOAll --------------------------------------------------
+  // FindAll --------------------------------------------------
   @Query(() => [Event], {
     name: 'findAllEvents',
     description: 'Get all events',
@@ -50,29 +53,30 @@ export class EventResolver {
   // -----------------------------------------------------------
 
   // Update ----------------------------------------------------
-  @Mutation(() => Boolean!, {
+  @Mutation(() => Event, {
     name: 'updateEvent',
     description:
       'Update one event. Returns true if successful. Otherwise, returns false.',
   })
   update(
-    @Args('id', { type: () => ID! }, ParseUUIDPipe)
+    @Args('id', { type: () => ID, nullable: false }, ParseUUIDPipe)
     id: string,
-    @Args('updateEvent', { type: () => UpdateEventInput! })
+    @Args('updateEvent', { type: () => UpdateEventInput, nullable: false })
     createEventInput: UpdateEventInput,
-  ) {
+  ): Promise<Event> {
     return this.eventService.update(id, createEventInput);
   }
   // -----------------------------------------------------------
 
   // Delete ----------------------------------------------------
-  @Mutation(() => Boolean!, {
+  @Mutation(() => Boolean, {
+    nullable: false,
     name: 'deleteEvent',
     description:
       'Delete one event. Returns true if successful. Otherwise, returns false.',
   })
   delete(
-    @Args('id', { type: () => ID! }, ParseUUIDPipe)
+    @Args('id', { type: () => ID, nullable: false }, ParseUUIDPipe)
     id: string,
   ): Promise<boolean> {
     return this.eventService.delete(id);
@@ -80,8 +84,8 @@ export class EventResolver {
   // -----------------------------------------------------------
 
   // Agreagations ----------------------------------------------
-
-  @Query(() => AggregationType!, {
+  @Query(() => AggregationType, {
+    nullable: false,
     name: 'count',
     description: 'Get the count of all events and incoming events',
   })
@@ -92,12 +96,12 @@ export class EventResolver {
     };
   }
 
-  @Query(() => Int!, { name: 'countAll' })
+  @Query(() => Int, { name: 'countAll', nullable: false })
   countAll() {
     return this.eventService.count();
   }
 
-  @Query(() => Int!, { name: 'incomingEvents' })
+  @Query(() => Int, { name: 'incomingEvents', nullable: false })
   countIncoming() {
     return this.eventService.countIncoming();
   }

@@ -69,4 +69,8 @@ export class Event {
   @Field(() => EventType!)
   @Column('enum', { enum: EventType })
   type: EventType;
+
+  @Field(() => String, { nullable: true })
+  @Column('varchar')
+  imageUrl: string;
 }

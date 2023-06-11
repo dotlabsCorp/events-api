@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Event } from './entity/event.entity';
 import { CreateEventInput, UpdateEventInput, EventArgs } from './dto';
+import { User } from 'src/users/entities';
 
 @Injectable()
 export class EventService {
@@ -33,7 +34,7 @@ export class EventService {
   }
 
   // Create -----------------------------------------------------
-  async create(createEventInput: CreateEventInput): Promise<boolean> {
+  async create(createEventInput: CreateEventInput): Promise<Event> {
     const newEvent = this.eventsRepository.create(createEventInput);
     const saveOp = await this.saveEvent(newEvent);
 
@@ -44,14 +45,13 @@ export class EventService {
     }
   }
 
-  private async saveEvent(event: Event): Promise<boolean | Error> {
+  private async saveEvent(event: Event): Promise<Event | Error> {
     try {
-      await this.eventsRepository.save(event);
+      const user = await this.eventsRepository.save(event);
+      return user;
     } catch (error) {
       return new Error(error);
     }
-
-    return true;
   }
   // -----------------------------------------------------------
 
@@ -112,10 +112,7 @@ export class EventService {
   // -----------------------------------------------------------
 
   // Update ----------------------------------------------------
-  async update(
-    id: string,
-    updateEventInput: UpdateEventInput,
-  ): Promise<boolean> {
+  async update(id: string, updateEventInput: UpdateEventInput): Promise<Event> {
     const event = await this.findOne(id);
 
     if (!event) {
@@ -134,14 +131,21 @@ export class EventService {
   private async updateEvent(
     id: string,
     updateEventInput: UpdateEventInput,
-  ): Promise<boolean | Error> {
+  ): Promise<Event | Error> {
     try {
-      await this.eventsRepository.update(id, updateEventInput);
-    } catch (error) {
-      return new Error(error);
-    }
+      const updatedResult = await this.eventsRepository.update(
+        id,
+        updateEventInput,
+      );
 
-    return true;
+      if (updatedResult.affected === 0) {
+        throw new Error('No rows affected');
+      }
+
+      return this.findOne(id);
+    } catch (error) {
+      throw new Error(error);
+    }
   }
   // -----------------------------------------------------------
 
@@ -180,9 +184,5 @@ export class EventService {
 
   async countIncoming(): Promise<number> {
     return (await this.incomingEvents).length;
-  }
-  // -----------------------------------------------------------
-  private isExistById(array: Event[], event: Event, id: string): boolean {
-    return array.some((event) => event.id === id);
   }
 }
