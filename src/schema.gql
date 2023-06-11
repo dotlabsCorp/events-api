@@ -2,6 +2,36 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type User {
+  id: ID!
+  fullName: String!
+  email: String!
+  roles: [ValidRoles!]!
+  walletAddress: String!
+  isBlocked: Boolean!
+  lastUpdatedBy: User
+}
+
+"""Valid Role type (ADMIN, USER, SUPER_USER)"""
+enum ValidRoles {
+  ADMIN
+  USER
+  SUPER_USER
+}
+
+type AuthResponse {
+  token: String!
+  user: User!
+}
+
+type Consultancy {
+  id: ID!
+  fullName: String!
+  email: String!
+  phoneNumber: String!
+  description: String!
+}
+
 type SpeakerObject {
   url: String
   name: String!
@@ -26,6 +56,7 @@ type Event {
   tags: [String!]!
   location: LocationObject!
   type: EventType!
+  imageUrl: String
 }
 
 enum EventType {
@@ -60,23 +91,35 @@ type Query {
   count: AggregationType!
   countAll: Int!
   incomingEvents: Int!
+  users(roles: [ValidRoles!] = []): [User!]!
+  getOneUser(id: ID!): User!
+  revalidate: AuthResponse!
+  getConsultancies: [Consultancy!]!
+  getOneConsultancy(id: ID!): User!
 }
 
 type Mutation {
   """
   Create one event. Returns true if successful. Otherwise, returns false.
   """
-  createEvent(createEvent: CreateEventInput!): Boolean!
+  createEvent(createEvent: CreateEventInput!): Event!
 
   """
   Update one event. Returns true if successful. Otherwise, returns false.
   """
-  updateEvent(id: ID!, updateEvent: UpdateEventInput!): Boolean!
+  updateEvent(id: ID!, updateEvent: UpdateEventInput!): Event!
 
   """
   Delete one event. Returns true if successful. Otherwise, returns false.
   """
   deleteEvent(id: ID!): Boolean!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  blockUser(id: ID!): Boolean!
+  removeUser(id: ID!): Boolean!
+  signUp(signUp: SignUpInput!): AuthResponse!
+  signIn(signIn: SignInInput!): AuthResponse!
+  createConsultancy(createConsultancyInput: CreateConsultancyInput!): Boolean!
+  updateConsultancy(updateConsultancy: UpdateConsultancyInput!): Boolean!
 }
 
 input CreateEventInput {
@@ -87,6 +130,7 @@ input CreateEventInput {
   tags: [String!]!
   location: LocationInput!
   type: EventType!
+  imageUrl: String!
 }
 
 input SpeakerInput {
@@ -112,4 +156,43 @@ input UpdateEventInput {
   tags: [String!]
   location: LocationInput
   type: EventType
+  imageUrl: String
+}
+
+input UpdateUserInput {
+  fullName: String
+  email: String
+  password: String
+  walletAddress: String
+  id: String!
+  roles: [ValidRoles!]
+  isBlocked: Boolean
+}
+
+input SignUpInput {
+  walletAddress: String!
+  email: String!
+  fullName: String!
+  password: String!
+}
+
+input SignInInput {
+  walletAddress: String!
+  email: String!
+  password: String!
+}
+
+input CreateConsultancyInput {
+  fullName: String!
+  email: String!
+  phoneNumber: String!
+  description: String!
+}
+
+input UpdateConsultancyInput {
+  fullName: String
+  email: String
+  phoneNumber: String
+  description: String
+  id: String!
 }

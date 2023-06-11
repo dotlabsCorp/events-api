@@ -1,14 +1,17 @@
-import { join } from 'path';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { Module } from '@nestjs/common';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module } from '@nestjs/common';
+import { join } from 'path';
 
-import { EventModule } from './event/event.module';
+import { ConsultancyModule } from './consultancy/consultancy.module';
 import { EventResolver } from './event/event.resolver';
 import { EventService } from './event/event.service';
+import { EventModule } from './event/event.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -33,6 +36,9 @@ import { EventService } from './event/event.service';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
     }),
     EventModule,
+    UsersModule,
+    AuthModule,
+    ConsultancyModule,
   ],
   providers: [EventResolver, EventService],
 })
